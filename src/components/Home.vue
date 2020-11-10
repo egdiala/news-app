@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div>
     <v-row>
       <v-col class="text-center" cols="4">
         <v-btn class="ma-2" color="indigo" @click="cardView()" dark>
@@ -26,7 +26,6 @@
         </v-btn>
       </v-col>
     </v-row>
-
     <v-row>
       <v-col
         v-if="view == 'card'"
@@ -63,11 +62,7 @@
           </v-card-text>
 
           <v-card-actions>
-            <v-btn color="orange" text>
-              Share
-            </v-btn>
-
-            <v-btn color="orange" text>
+            <v-btn color="orange" :href="post.url" text>
               Explore
             </v-btn>
           </v-card-actions>
@@ -81,7 +76,7 @@
         infinite-scroll-distance="limit"
       >
         <v-list three-line>
-          <template v-for="(post, index) in news">
+          <template v-for="(post, index) in news" @click="goTo(post.url)">
             <v-subheader
               v-if="post.header"
               :key="post.header"
@@ -110,7 +105,7 @@
         </v-list>
       </v-col>
     </v-row>
-  </v-container>
+  </div>
 </template>
 
 <script>
@@ -124,16 +119,20 @@ export default {
   data: () => ({
     show: false,
     news: [],
-    limit: 4,
+    persons: [],
+    limit: 100,
+    scrolledToBottom: false,
+    page: 1,
     busy: false,
     view: "card",
   }),
   methods: {
     getData() {
       this.busy = true;
+      var page = this.page;
       axios
         .get(
-          `https://newsapi.org/v2/everything?domains=techcrunch.com,thenextweb.com&apiKey=b5bbec5c1345473ba3e88d085f05f897`
+          `https://newsapi.org/v2/everything?domains=techcrunch.com,thenextweb.com&apiKey=b5bbec5c1345473ba3e88d085f05f897&page=${page}`
         )
         .then((res) => {
           const append = res.data.articles.slice(
@@ -142,7 +141,6 @@ export default {
           );
           this.news = this.news.concat(append);
           this.busy = false;
-          this.news = res.data.articles;
         });
     },
     cardView() {
@@ -150,6 +148,12 @@ export default {
     },
     listView() {
       this.view = "list";
+    },
+    loadMore() {
+      this.busy = true;
+      setTimeout(() => {
+        this.busy = false;
+      }, 1000);
     },
     sessionAuth() {
       if (!localStorage.getItem("loggedIn")) {
@@ -167,6 +171,9 @@ export default {
             this.$router.push("/");
           });
         });
+    },
+    goTo(url) {
+      window.location.href = url;
     },
   },
   created() {
