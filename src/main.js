@@ -7,7 +7,9 @@ import firebase from "firebase";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import infiniteScroll from "vue-infinite-scroll";
+import VueObserveVisibility from "vue-observe-visibility";
 Vue.use(infiniteScroll);
+Vue.use(VueObserveVisibility);
 Vue.use(VueRouter);
 
 Vue.config.productionTip = false;

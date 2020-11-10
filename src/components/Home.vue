@@ -105,6 +105,7 @@
         </v-list>
       </v-col>
     </v-row>
+    <div v-if="news.length" v-observe-visibility="handleScrollToBottom"></div>
   </div>
 </template>
 
@@ -123,37 +124,34 @@ export default {
     limit: 100,
     scrolledToBottom: false,
     page: 1,
+    lastPage: 5,
     busy: false,
     view: "card",
   }),
   methods: {
-    getData() {
+    async getData() {
       this.busy = true;
-      var page = this.page;
-      axios
-        .get(
-          `https://newsapi.org/v2/everything?domains=techcrunch.com,thenextweb.com&apiKey=b5bbec5c1345473ba3e88d085f05f897&page=${page}`
-        )
-        .then((res) => {
-          const append = res.data.articles.slice(
-            this.news.length,
-            this.news.length + this.limit
-          );
-          this.news = this.news.concat(append);
-          this.busy = false;
-        });
+      let news = await axios.get(
+        `https://newsapi.org/v2/everything?domains=techcrunch.com,thenextweb.com&apiKey=ee2383b8f68a464a96757a4af730ee62&page=${this.page}`
+      );
+      this.news.push(...news.data.articles);
+      this.busy = false;
+    },
+    handleScrollToBottom(isVisible) {
+      if (!isVisible) {
+        return;
+      }
+      if (this.page >= this.lastPage) {
+        return;
+      }
+      this.page++;
+      this.getData();
     },
     cardView() {
       this.view = "card";
     },
     listView() {
       this.view = "list";
-    },
-    loadMore() {
-      this.busy = true;
-      setTimeout(() => {
-        this.busy = false;
-      }, 1000);
     },
     sessionAuth() {
       if (!localStorage.getItem("loggedIn")) {
